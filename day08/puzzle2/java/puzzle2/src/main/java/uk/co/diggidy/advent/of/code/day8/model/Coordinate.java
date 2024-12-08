@@ -13,22 +13,41 @@ public record Coordinate(int x, int y, int limitX, int limitY) {
         // y = mx + c
         // m = y2 - y1 / x2 - x1
         // c = y - mx
-        BigDecimal dmx = BigDecimal.valueOf(this.x() - target.x());
-        BigDecimal dmy = BigDecimal.valueOf(this.y() - target.y());
-        BigDecimal m = dmy.divide(dmx,4,BigDecimal.ROUND_HALF_UP);
-        BigDecimal c = BigDecimal.valueOf(this.y()).subtract(m.multiply(BigDecimal.valueOf(this.x())));
-
         List<String> antinodes = new ArrayList<>();
-        for (int i = 0; i < limitX; i++) {
-            BigDecimal j = m.multiply(BigDecimal.valueOf(i)).add(c);
-            if (!hasDecimal(j) && j.intValue() >= 0 && j.intValue() < limitY) {
-                antinodes.add(String.format("%d,%d", i, j.intValue()));
+        int dx = target.x() - this.x();
+        int dy = target.y() - this.y();
+        if (dx == 0) {
+            for (int j = 0; j < limitY; j++) {
+                antinodes.add(String.format("%d,%d", this.x, j));
+            }
+        } else {
+            double m = (double) dy / dx;
+            double c = this.y - m * this.x;
+
+
+            for (int i = 0; i < limitX; i++) {
+                double j = (m * i) + c;
+                if(j >= 0 && j < limitY && Math.abs(j- Math.round(j)) < 1e-9) {
+                    antinodes.add(String.format("%d,%d", i, (int)j));
+                }
             }
         }
         return antinodes;
     }
 
+    private boolean isLessThan(BigDecimal a, int b) {
+        return a.compareTo(BigDecimal.valueOf(b).setScale(3, BigDecimal.ROUND_HALF_UP)) < 0;
+    }
+
+    private boolean isGreaterThanOrEqualToZero(BigDecimal d) {
+        return d.compareTo(BigDecimal.ZERO) >= 0;
+    }
+
+    private boolean isRemainderSubstantial(BigDecimal value) {
+        return value.remainder(BigDecimal.ONE).compareTo(BigDecimal.valueOf(0.001)) < 0 || value.remainder(BigDecimal.ONE).compareTo(BigDecimal.valueOf(0.999)) > 0;
+    }
+
     private boolean hasDecimal(BigDecimal number) {
-        return number.compareTo(number.setScale(0, BigDecimal.ROUND_DOWN)) != 0;
+        return number.compareTo(number.setScale(2, BigDecimal.ROUND_HALF_UP)) != 0;
     }
 }

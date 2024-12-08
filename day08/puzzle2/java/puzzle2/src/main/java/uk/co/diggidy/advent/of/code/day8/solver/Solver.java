@@ -6,6 +6,8 @@ import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 public class Solver {
 
@@ -19,20 +21,41 @@ public class Solver {
         Collection<List<Node>> entries = nodeMap.values();
         Set<String> antinodes = new HashSet<>();
         for (List<Node> entry : entries) {
-            for (int i = entry.size() - 1; i >= 0; i--) {
+            for (int i = 0; i < entry.size(); i++) {
                 Node current = entry.get(i);
-                for (int j = 0; j < entry.size() -1; j++) {
-                    if(i != j){
-
-                    Node next = entry.get(j);
-                    current.getCoord().findAntinode(next.getCoord()).stream()
-                            .filter(s -> !s.isBlank())
-                            .forEach(antinodes::add);
+                for (int j = 0; j < entry.size() - 1; j++) {
+                    if (i != j) {
+                        Node next = entry.get(j);
+                        current.getCoord().findAntinode(next.getCoord()).stream()
+                                .filter(s -> !s.isBlank())
+                                .forEach(antinodes::add);
                     }
                 }
             }
         }
+        createMap(antinodes, rowLimit, colLimit);
         return antinodes.size();
+    }
+
+    private void createMap(Set<String> antinodes, int rowLimit, int colLimit) {
+        System.out.println(" " +
+                IntStream.range(0, rowLimit)
+                        .mapToObj(String::valueOf)
+                        .collect(Collectors.joining(""))
+        );
+
+        for (int i = 0; i < rowLimit; i++) {
+            String row = "";
+            for (int j = 0; j < colLimit; j++) {
+                if (antinodes.contains(String.format("%d,%d", j, i))) {
+                    row = row + "#";
+                } else {
+                    row = row + ".";
+                }
+            }
+            System.out.println(i + " " + row);
+        }
+
     }
 
     private Map<String, List<Node>> getNodeMap(List<List<String>> grid) {
@@ -61,6 +84,7 @@ public class Solver {
              BufferedReader reader = new BufferedReader(new InputStreamReader(inputStream))) {
 
             return reader.lines()
+                    .map(String::trim)
                     .map(line -> Arrays.stream(line.split("")).map(String::trim).toList())
                     .toList();
 
