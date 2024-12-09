@@ -24,11 +24,13 @@ public class Solver {
                 previousBlockType = blockType;
                 if (!blockType.equalsIgnoreCase(".")) {
                     int blockInitialPos = i;
-                    while (blockInitialPos >= 0) {
+                    while (true) {
+                        blockInitialPos--;
+                        if (blockInitialPos < 0) {
+                            break;
+                        }
                         String blockToCheck = cleanedDiskMap.get(blockInitialPos);
-                        if (blockToCheck.equals(blockType)) {
-                            blockInitialPos--;
-                        } else {
+                        if (!blockToCheck.equals(blockType)) {
                             break;
                         }
                     }
@@ -36,12 +38,13 @@ public class Solver {
                     for (int j = 0; j < i; j++) {
                         final String initialBlockToBeReplaced = cleanedDiskMap.get(j);
                         if (initialBlockToBeReplaced.equalsIgnoreCase(".")) {
-                            final String blockAtEndLoc = cleanedDiskMap.get(j + blockLength-1);
-                            if (blockAtEndLoc.equals(".")) {
+                            final List<String> blockAtEndLoc = cleanedDiskMap.subList(j, j+blockLength);
+
+                            if (blockAtEndLoc.stream().allMatch(s -> s.equals("."))) {
                                 for (int k = j; k < j + blockLength; k++) {
                                     cleanedDiskMap.set(k, blockType);
                                 }
-                                for (int k = i; k >= blockInitialPos-1; k--) {
+                                for (int k = i; k > blockInitialPos; k--) {
                                     cleanedDiskMap.set(k, ".");
                                 }
                                 break;
